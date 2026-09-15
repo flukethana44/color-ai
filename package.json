@@ -1,0 +1,20 @@
+{
+  "name": "ai-color-guide",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Color Guide \u2014 Color + Department \u2192 a department-specific, AI-generated Visual Guide.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "next": "^15.5.2",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  }
+}
