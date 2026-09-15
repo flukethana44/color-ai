@@ -7,7 +7,7 @@ import CameraFocus from '../components/CameraFocus';
 import GuideResults from '../components/GuideResults';
 
 export default function Home() {
-  const [color, setColor] = useState('#35A853');
+  const [color, setColor] = useState('#ffffff');
   const [departmentId, setDepartmentId] = useState('multimedia');
   const [guide, setGuide] = useState(null);
   const department = DEPARTMENTS.find((item) => item.id === departmentId);
