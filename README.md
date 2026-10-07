@@ -19,3 +19,4 @@ Do not commit `.env`; it is already ignored. The image endpoint is implemented a
 "# color-ai" 
 "# color-ai" 
 "# color-ai" 
+                  
