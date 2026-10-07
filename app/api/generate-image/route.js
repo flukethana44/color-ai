@@ -220,7 +220,16 @@ export async function POST(request) {
       'Road Network': 'Show a clear top-down transport plan with connected roads, intersections, and a visible hierarchy of routes. Keep the whole network in frame and avoid perspective views.',
       'Public Space': 'Show a recognizable public plaza or park at human scale, with paths, planting, seating, and people for scale. Make the public space the clear subject.',
     };
-    const subjectDirection = subjectDirections[subject] || `Create a clearly recognizable image of "${subject}" as the single main subject.`;
+    const isDigitalDepartment = department.includes('สื่อดิจิทัลและคอนเทนต์');
+    const digitalSubjectDirections = {
+      'UI/UX': 'Show the finished UI/UX interface itself, edge-to-edge and filling the entire image like a polished Figma design canvas. Use a professional web application or management dashboard with a clear top navigation or sidebar, content sections, grid, typography hierarchy, cards, buttons, a prominent CTA, forms and input fields, icons, menus, and visible active states. Make spacing and component alignment precise; keep labels short and crisp. This is a flat, front-facing interface artwork, not a scene.',
+      Website: 'Show a complete, finished professional website or landing page as the artwork itself, full-frame from header through footer. Include a navigation header, hero headline and CTA, well-structured content sections, cards or visual elements, clear typography, grid, and footer. Show as much of the page as possible in one coherent long-page design, with short crisp text and clear section hierarchy. No browser chrome or floating browser window.',
+      Application: 'Show 3–5 finished mobile application UI screens together as flat, front-facing design artboards, with no device frames. Include a coherent shared design system across screens such as Home, Search, Detail, Profile, or Settings; show app bars, bottom navigation, buttons, cards, icons, input fields, lists, active tabs, and realistic content. Make the actual app screens fill the image and read unmistakably as a mobile app design system.',
+      'Motion Graphic': 'Show a finished motion-graphic artwork as a full-frame hero keyframe, not a user interface. Build a dynamic layered composition with kinetic typography, geometric shapes, graphic elements, lines or patterns, transition elements, depth, directional movement, energy, and visual rhythm. The still frame must strongly imply animation and motion; make the chosen palette integral to the type, background, shapes, and motion layers.',
+    };
+    const subjectDirection = isDigitalDepartment && digitalSubjectDirections[subject]
+      ? digitalSubjectDirections[subject]
+      : subjectDirections[subject] || `Create a clearly recognizable image of "${subject}" as the single main subject.`;
     const accentPlacements = {
       'Floor Plan': 'Fill a few plan zones or the primary circulation path with this color while keeping walls and other rooms white or gray.',
       Facade: 'Use it on a large, clearly painted facade panel or vertical fins; do not substitute it with wood, tan, or beige cladding.',
@@ -231,23 +240,41 @@ export async function POST(request) {
       'Road Network': 'Use it to mark the primary route with a bold line against neutral surrounding blocks.',
     }[subject] || 'Apply it to one clearly defined focal element.';
     const requestedColor = `${colorNameEN(hex).toLowerCase()} (${hex.toUpperCase()})`;
-    const colorDirection = colorRole === 'Accent Color'
-      ? `Use vivid, saturated ${requestedColor} as an unmistakable accent, clearly visible at thumbnail size and not reduced to a pale tint or material color. ${accentPlacements} Keep other surfaces neutral white, gray, or navy.`
-      : `Use ${requestedColor} as the ${colorRole || 'Primary Color'} and make its role visually obvious.`;
+    const colorDirection = isDigitalDepartment && digitalSubjectDirections[subject]
+      ? `Use the exact selected color ${hex.toUpperCase()} (RGB ${hex.slice(1).match(/../g).map((channel) => parseInt(channel, 16)).join(' / ')}) prominently in the actual design. ${{
+        'Primary Color': 'Use it for primary buttons, navigation, and the main interface or graphic elements.',
+        'Secondary Color': 'Use it for cards, supporting surfaces, and secondary interface or graphic elements.',
+        'Accent Color': 'Use it for CTAs, active states, highlights, and icons so it is vivid and immediately visible.',
+        'Background Color': 'Use it for the page or canvas background and coordinate contrasting surfaces and text for legibility.',
+      }[colorRole] || `Use it as the ${colorRole || 'Primary Color'} and make that role visually obvious.`} Do not replace the selected color with a similar hue or use it only as a tiny detail.`
+      : colorRole === 'Accent Color'
+        ? `Use vivid, saturated ${requestedColor} as an unmistakable accent, clearly visible at thumbnail size and not reduced to a pale tint or material color. ${accentPlacements} Keep other surfaces neutral white, gray, or navy.`
+        : `Use ${requestedColor} as the ${colorRole || 'Primary Color'} and make its role visually obvious.`;
     const structuredSubjects = ['Floor Plan', 'City Planning', 'Master Plan', 'Road Network'];
-    const variationDirection = structuredSubjects.includes(subject)
-      ? 'Use a complete, legible orthographic composition; do not apply close-up, perspective, or flat-lay camera variations.'
-      : `Composition variation ${variationIndex}: ${variation || 'use a clear, subject-appropriate composition'}. Keep the subject unmistakable.`;
+    const variationDirection = isDigitalDepartment && digitalSubjectDirections[subject]
+      ? 'Keep the design itself edge-to-edge and dominant. Ignore any generic scene, camera, or flat-lay variation that would turn the design into a mockup or make it smaller.'
+      : structuredSubjects.includes(subject)
+        ? 'Use a complete, legible orthographic composition; do not apply close-up, perspective, or flat-lay camera variations.'
+        : `Composition variation ${variationIndex}: ${variation || 'use a clear, subject-appropriate composition'}. Keep the subject unmistakable.`;
+    const digitalSupportingDirection = isDigitalDepartment && digitalSubjectDirections[subject];
     const prompt = [
-      `Create a polished, realistic design concept image for ${department}.`,
+      digitalSupportingDirection
+        ? `Create a polished, finished ${subject} design artwork for ${department}.`
+        : `Create a polished, realistic design concept image for ${department}.`,
       `Main subject: ${subject}. ${subjectDirection}`,
       colorDirection,
       `Color temperature: ${colorTemperature || 'Balanced'}. Supporting background: ${backgroundColor || 'neutral grey'}. ${contrastGuidance || 'Maintain clear contrast.'}`,
       variationDirection,
       style.length && `Visual style: ${style.join(', ')}.`,
-      shapes.length && `Use this supporting form only if it reinforces the subject: ${shapes.join(', ')}.`,
-      objects.length && `Include this relevant object only if it reinforces the subject: ${objects.join(', ')}.`,
-      'Prioritize a sharp, readable subject and coherent real-world structure. Avoid blur, unrelated objects, decorative mockups, and abstract imagery that obscures the subject.',
+      shapes.length && (digitalSupportingDirection
+        ? `Use these system shapes only as a layout grid or graphic elements within the finished design: ${shapes.join(', ')}.`
+        : `Use this supporting form only if it reinforces the subject: ${shapes.join(', ')}.`),
+      objects.length && (digitalSupportingDirection
+        ? `Treat these system object cues only as small on-screen UI symbols or abstract graphic motifs, never as physical devices, props, or a surrounding scene: ${objects.join(', ')}.`
+        : `Include this relevant object only if it reinforces the subject: ${objects.join(', ')}.`),
+      digitalSupportingDirection
+        ? `The finished design must occupy nearly the entire frame. No laptop, monitor, smartphone, device frame, desk, office, people, designer, or scene showing someone viewing or creating the work. Show the actual ${subject} output, not a mockup, process, or concept illustration.`
+        : 'Prioritize a sharp, readable subject and coherent real-world structure. Avoid blur, unrelated objects, decorative mockups, and abstract imagery that obscures the subject.',
     ].filter(Boolean).join(' ');
 
     const controller = new AbortController();
