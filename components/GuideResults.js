@@ -68,7 +68,7 @@ function ImageCard({ hex, department, subject, index, analysis }) {
           colorTemperature: analysis.temperature,
           backgroundColor: analysis.background,
           contrastGuidance: analysis.contrast,
-          ...(fallbackOnly && { fallbackOnly: true }),
+          ...(fallbackOnly === true && { fallbackOnly: true }),
         }),
       });
       const data = await response.json().catch(() => ({}));
@@ -89,7 +89,7 @@ function ImageCard({ hex, department, subject, index, analysis }) {
 
   const usage = buildUsage(hex, department, subject, index, analysis);
   return <article className="gcard"><div className="gcard-visual">
-    {image ? <><img className="gcard-img" src={image} alt={`${subject.label} concept`} onError={() => { if (!isFallback) requestImage(true); }} />{isFallback && <div className="img-fallback-actions"><span className="img-fallback-label">ภาพสำรอง · ไม่ใช่ภาพ AI</span><button type="button" className="img-retry-btn" onClick={() => requestImage()}>ลองสร้างภาพ AI อีกครั้ง</button></div>}</> : loading ? <div className="img-status img-loading"><div className="loading-dot-row"><span className="loading-dot" /><span className="loading-dot" /><span className="loading-dot" /></div></div> : error ? <div className="img-status img-error"><p>สร้างภาพไม่สำเร็จ: {error}</p><button type="button" className="img-retry-btn" onClick={requestImage}>ลองใหม่</button></div> : <div className="img-status"><p>สร้างภาพ AI สำหรับหัวข้อนี้</p><button type="button" className="img-retry-btn" onClick={requestImage}>✨ สร้างภาพ AI</button></div>}
+    {image ? <><img className="gcard-img" src={image} alt={`${subject.label} concept`} onError={() => { if (!isFallback) requestImage(true); }} />{isFallback && <div className="img-fallback-actions"><span className="img-fallback-label">ภาพสำรอง · ไม่ใช่ภาพ AI</span><button type="button" className="img-retry-btn" onClick={() => requestImage()}>ลองสร้างภาพ AI อีกครั้ง</button></div>}</> : loading ? <div className="img-status img-loading"><div className="loading-dot-row"><span className="loading-dot" /><span className="loading-dot" /><span className="loading-dot" /></div></div> : error ? <div className="img-status img-error"><p>สร้างภาพไม่สำเร็จ: {error}</p><button type="button" className="img-retry-btn" onClick={() => requestImage()}>ลองใหม่</button></div> : <div className="img-status"><p>สร้างภาพ AI สำหรับหัวข้อนี้</p><button type="button" className="img-retry-btn" onClick={() => requestImage()}>✨ สร้างภาพ AI</button></div>}
   </div><div className="gcard-body"><p className="gcard-type">{department.name}</p><p className="gcard-title">{subject.label}</p><p className="gcard-desc">{analysis.role} · {analysis.temperature} · {analysis.brightness} · {analysis.saturation}</p><div className="gcard-usage">{usage}</div><button className="gcard-prompt-toggle" onClick={() => setOpen(!open)}>{open ? 'ซ่อน image prompt' : 'ดู image prompt >'}</button>{open && <pre className="gcard-prompt show">{buildPrompt(hex, department, subject, analysis)}</pre>}</div></article>;
 }
 
